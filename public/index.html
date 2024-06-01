@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test trial project</title>
+</head>
+<body>
+  <form onsubmit="return false">
+    User ID
+    <input type="number" id="userId" value="1" step="1" min="1"><br>
+    <button id="getUser">Get by ID</button><br>
+    <label>Email<input type="text" id="email"></label><br>
+    <label>Password<input type="password" id="password"></label><br>
+    <label>Name<input type="text" id="name"></label><br>
+    <button id="createUser">Create</button>
+    <button id="putUser">Update</button>
+    <button id="deleteUser">Delete</button>
+  </form>
+  Output:
+  <output></output>
+  <script type="module">
+    const $ = (selector) => document.querySelector(selector)
+
+    const userId = $('#userId')
+    const getUserButton = $('#getUser')
+    const putUserButton = $('#putUser')
+    const createUserButton = $('#createUser')
+    const deleteUserButton = $('#deleteUser')
+    const email = $('#email')
+    const password = $('#password')
+    const name = $('#name')
+    const output = $('output')
+
+    async function handleErrorResponse(response) {
+      const text = await response.text()
+      output.innerText = `${response.status} ${response.statusText} ${text}`
+    }
+
+    getUserButton.addEventListener('click', async () => {
+      const response = await fetch(`/users/${userId.value}`)
+      if (response.status !== 200) {
+        await handleErrorResponse(response)
+        return;
+      }
+      const user = await response.json()
+      email.value = user.email
+      name.value = user.name
+      output.innerText = `${response.status} ${response.statusText}`
+    })
+
+    createUserButton.addEventListener('click', async () => {
+      const response = await fetch(`/users`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.value,
+          name: name.value,
+          password: password.value
+        })
+      }).catch(e => console.log(e))
+      if (response.status !== 200) {
+        await handleErrorResponse(response)
+        return;
+      }
+      const user = await response.json()
+      email.value = user.email
+      name.value = user.name
+      password.value = ''
+      userId.value = user.id
+      output.innerText = `${response.status} ${response.statusText}`
+    })
+
+    putUserButton.addEventListener('click', async () => {
+      const response = await fetch(`/users/${userId.value}`, {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.value,
+          name: name.value,
+          password: password.value
+        })
+      })
+      if (response.status !== 200) {
+        await handleErrorResponse(response)
+        return;
+      }
+      const user = await response.json()
+      email.value = user.email
+      name.value = user.name
+      password.value = ''
+      output.innerText = `${response.status} ${response.statusText}`
+    })
+
+    deleteUserButton.addEventListener('click', async () => {
+      const response = await fetch(`/users/${userId.value}`, { method: 'DELETE' })
+      if (response.status !== 200) {
+        await handleErrorResponse(response)
+        return;
+      }
+      userId.value = ''
+      email.value = ''
+      name.value = ''
+      password.value = ''
+      output.innerText = `${response.status} ${response.statusText}`
+    })
+  </script>
+</body>
+</html>
